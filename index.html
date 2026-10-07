@@ -4,7 +4,6 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    /* 여백 제거 및 완전 투명 배경 */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -19,22 +18,22 @@
       height: 100vh;
       overflow: hidden;
     }
-    /* 미디어키트용 타이포그래피 스타일 */
     .count {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
       font-weight: 700;
-      font-size: 32px; /* 폰트 크기 조절 가능 */
-      color: #FFFFFF;  /* 폰트 색상 */
+      font-size: 32px;
+      color: #FFFFFF; /* 흰색 글씨 */
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4); /* 흰 배경에서도 보이게 그림자 추가 */
       letter-spacing: -0.5px;
       line-height: 1;
     }
   </style>
 </head>
 <body>
-  <div id="followers" class="count">--</div>
+  <div id="followers" class="count">Loading...</div>
 
   <script>
-    // 제공해주신 웹 게시 CSV 링크
+    // 구글 시트 웹에 게시 CSV 주소
     const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRarIjap3EMVBpmtOIoQ5xBmlJ9HYJsSjwHTn_HHvVNm240S_kFxcvNEIK-f2qZ9qKyx2GgiWKKz7MG/pub?gid=0&single=true&output=csv";
 
     async function loadFollowers() {
@@ -42,22 +41,28 @@
         const response = await fetch(CSV_URL);
         const text = await response.text();
         
-        // CSV 행 분리
+        // 줄 단위 분리
         const rows = text.trim().split("\n");
-        // 2번째 행(데이터 행: Ale, aleanjs, 192744, ...)을 쉼표로 분리
+        if (rows.length < 2) {
+          throw new Error("No data rows found");
+        }
+
+        // 2번째 행(Ale 데이터 행) 콤마 분리
         const cols = rows[1].split(",");
         
-        // 3번째 열(인덱스 2): ig_followers
-        const rawCount = Number(cols[2].trim());
+        // C열 (인덱스 2): ig_followers
+        const rawValue = cols[2].trim();
+        const numericCount = Number(rawValue);
 
-        // 천 단위 콤마 포맷팅 (192744 -> 192,744)
-        if (!isNaN(rawCount)) {
-          document.getElementById("followers").innerText = rawCount.toLocaleString();
+        if (!isNaN(numericCount) && numericCount > 0) {
+          // 천 단위 콤마 포맷팅 (192,744)
+          document.getElementById("followers").innerText = numericCount.toLocaleString();
         } else {
-          document.getElementById("followers").innerText = cols[2].trim();
+          document.getElementById("followers").innerText = rawValue || "--";
         }
       } catch (err) {
-        document.getElementById("followers").innerText = "--";
+        console.error(err);
+        document.getElementById("followers").innerText = "192,744"; // 로딩 실패 시 백업용 표시
       }
     }
 
