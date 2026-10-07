@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    /* 여백 제거 및 완전 투명 배경 */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+    /* 미디어키트용 타이포그래피 스타일 */
+    .count {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      font-weight: 700;
+      font-size: 32px; /* 폰트 크기 조절 가능 */
+      color: #FFFFFF;  /* 폰트 색상 */
+      letter-spacing: -0.5px;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="followers" class="count">--</div>
+
+  <script>
+    // 제공해주신 웹 게시 CSV 링크
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRarIjap3EMVBpmtOIoQ5xBmlJ9HYJsSjwHTn_HHvVNm240S_kFxcvNEIK-f2qZ9qKyx2GgiWKKz7MG/pub?gid=0&single=true&output=csv";
+
+    async function loadFollowers() {
+      try {
+        const response = await fetch(CSV_URL);
+        const text = await response.text();
+        
+        // CSV 행 분리
+        const rows = text.trim().split("\n");
+        // 2번째 행(데이터 행: Ale, aleanjs, 192744, ...)을 쉼표로 분리
+        const cols = rows[1].split(",");
+        
+        // 3번째 열(인덱스 2): ig_followers
+        const rawCount = Number(cols[2].trim());
+
+        // 천 단위 콤마 포맷팅 (192744 -> 192,744)
+        if (!isNaN(rawCount)) {
+          document.getElementById("followers").innerText = rawCount.toLocaleString();
+        } else {
+          document.getElementById("followers").innerText = cols[2].trim();
+        }
+      } catch (err) {
+        document.getElementById("followers").innerText = "--";
+      }
+    }
+
+    loadFollowers();
+  </script>
+</body>
+</html>
